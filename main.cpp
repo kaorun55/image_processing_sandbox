@@ -10,10 +10,20 @@
 #define OFFSET  128
 #define TEXT_BUF_LEN    10000
 
+void threshold( const cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int thresh )
+{
+    for ( int y = 0; y < in->width; ++y ) {
+        for ( int x = 0; x < in->height; ++x ) {
+            int index = (y * in->width) + x;
+            out->imageData[index] = (in->imageData[index] <= thresh) ? HIGH : LOW;
+        }
+    }
+}
+
 void main()
 {
     try { 
-        cv::Ptr< IplImage > image = ::cvLoadImage( "lena.bmp" );
+        cv::Ptr< IplImage > image = ::cvLoadImage( "lena.bmp", CV_LOAD_IMAGE_GRAYSCALE );
         if ( image == 0 ) {
             throw std::runtime_error("error : cvLoadImage");
         }
@@ -24,7 +34,9 @@ void main()
             throw std::runtime_error("error : cvCreateImage");
         }
 
-        ::cvShowImage( "cv", image );
+        ::threshold( image, show, 16 );
+
+        ::cvShowImage( "cv", show );
         ::cvWaitKey();
     }
     catch ( std::exception& ex ) {
