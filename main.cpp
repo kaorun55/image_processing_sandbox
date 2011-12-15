@@ -34,10 +34,22 @@ void main()
             throw std::runtime_error("error : cvCreateImage");
         }
 
-        ::threshold( image, show, 16 );
-
-        ::cvShowImage( "cv", show );
-        ::cvWaitKey();
+        ::cvShowImage( "cv", image );
+        while ( 1 ) {
+            int key = ::cvWaitKey( 10 );
+            if ( (key == 'q') || (key == 13) ) {
+                break;
+            }
+            // Ç‡Ç∆Ç…Ç‡Ç«Ç∑
+            else if ( key == 'u' ) {
+                ::cvShowImage( "cv", image );
+            }
+            // Ëáílèàóù
+            else if ( key == 't' ) {
+                ::threshold( image, show, 16 );
+                ::cvShowImage( "cv", show );
+            }
+        }
     }
     catch ( std::exception& ex ) {
         std::cout << ex.what() << std::endl;
