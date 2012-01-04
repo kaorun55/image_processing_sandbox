@@ -20,4 +20,5 @@ void hist_smooth( long hist_in[HIST_LEN], long hist_out[HIST_LEN] );
 
 void thresh_mode( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int smt, int type );
 void thresh_discrim( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int type );
+void thresh_dynamic( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int type );
 

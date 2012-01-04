@@ -222,3 +222,114 @@ void thresh_discrim( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int type
 
     threshold( in, out, thresh, type );
 }
+
+
+// 動的閾値法
+#define DIV 8
+#define XS  (X_SIZE / DIV)
+#define YS  (Y_SIZE / DIV)
+#define DTH 0.7
+
+void thresh_dynamic( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int type )
+{
+    int i, j, k, m, n;
+    int m1, m2, n1, n2;
+    int s, t;
+    int thm[DIV+1][DIV+1];
+
+    long hist[HIST_LEN];
+    int thresh;
+    double p, q;
+
+    memset( thm, 0, sizeof(thm) );
+
+    // 格子点の閾値の決定
+    for ( i = 0; i < DIV; ++i ) {
+        for ( j = 0; j < DIV; ++j ) {
+            memset( hist, 0, sizeof(hist) );
+
+            m1 = (i != 0) ? -YS : 0;
+            m2 = (i != DIV) ? YS : 0;
+
+            n1 = (j != 0) ? -XS : 0;
+            n2 = (j != DIV) ? XS : 0;
+
+            for ( m = m1; m < m2; ++m ) {
+                for ( n = n1; n < n2; ++n ) {
+                    int x = j * XS + n;
+                    int y = i * YS + m;
+                    k = in->imageData[(y * in->widthStep) + x];
+                    hist[k]++;
+                }
+            }
+
+            thm[i][j] = ::calc_discrim_thresh( hist, DTH );
+        }
+    }
+
+    // 閾値が得られなかった格子点の閾値の決定
+    for ( i = 0; i < DIV; ++i ) {
+        for ( j = 0; j < DIV; ++j ) {
+            if ( thm[i][j] > 0 )  {
+                continue;
+            }
+
+            for ( k = 1; k < DIV; ++k ) {
+                s = 0;
+                t = 0;
+                m1 = i - k;
+                m2 = i + k;
+                n1 = j - k;
+                n2 = j + k;
+
+                if ( m1 < 0 )
+                    m1 = 0;
+
+                if ( m2 > DIV )
+                    m2 = DIV;
+
+                if ( n1 < 0 )
+                    n1 = 0;
+
+                if ( n2 > DIV )
+                    n2 = DIV;
+
+                for ( m = m1; m < m2; ++m ) {
+                    for ( n = n1; n < n2; ++n ) {
+                        if ( thm[m][n] > 0 ) {
+                            s += 1 / k;
+                            t += thm[m][n] / k;
+                        }
+                    }
+                }
+
+                if ( s >= 4 ) {
+                    thm[i][j] = t / s;
+                    break;
+                }
+            }
+        }
+    }
+
+
+    // 画素ごとの閾値の決定
+    for ( i = 0; i < Y_SIZE; ++i ) {
+        for ( j = 0; j < X_SIZE; ++j ) {
+            m = i / YS;
+            n = j / XS;
+            q = (double)(i % YS) / YS;
+            p = (double)(j % XS) / XS;
+
+            thresh = (int)((1.0 - q) * (1.0 - p) * thm[m][n] + p * thm[m][n + 1]) + 
+                                 (q * (1.0 - p) * thm[m + 1][n] + p * thm[m + 1][n + 1]);
+
+            int index = (i * in->width) + j;
+            if ( type == 2 ) {
+                out->imageData[index] = (in->imageData[index] <= thresh) ? HIGH : LOW;
+            }
+            else {
+                out->imageData[index] = (in->imageData[index] >= thresh) ? HIGH : LOW;
+            }
+        }
+    }
+}

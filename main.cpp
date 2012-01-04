@@ -60,6 +60,11 @@ void main()
                 ::thresh_discrim( image, show, 2 );
                 ::cvShowImage( "cv", show );
             }
+            // “®“Iè‡’l–@
+            else if ( key == 'y' ) {
+                ::thresh_dynamic( image, show, 1 );
+                ::cvShowImage( "cv", show );
+            }
         }
     }
     catch ( std::exception& ex ) {
