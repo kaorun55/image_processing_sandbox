@@ -55,6 +55,11 @@ void main()
                 ::thresh_mode( image, show, 3, 1 );
                 ::cvShowImage( "cv", show );
             }
+            // ”»•Κ•ªΝ–@‚Ι‚ζ‚ιθ‡’l—
+            else if ( key == 'd' ) {
+                ::thresh_discrim( image, show, 2 );
+                ::cvShowImage( "cv", show );
+            }
         }
     }
     catch ( std::exception& ex ) {

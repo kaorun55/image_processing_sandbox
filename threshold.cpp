@@ -1,12 +1,17 @@
 #include "image_processing.h"
 
 // 閾値処理
-void threshold( const cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int thresh )
+void threshold( const cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int thresh, int type /*= 2*/ )
 {
     for ( int y = 0; y < in->width; ++y ) {
         for ( int x = 0; x < in->height; ++x ) {
             int index = (y * in->width) + x;
-            out->imageData[index] = (in->imageData[index] <= thresh) ? HIGH : LOW;
+            if ( type == 2 ) {
+                out->imageData[index] = (in->imageData[index] <= thresh) ? HIGH : LOW;
+            }
+            else {
+                out->imageData[index] = (in->imageData[index] >= thresh) ? HIGH : LOW;
+            }
         }
     }
 }
@@ -101,7 +106,7 @@ void hist_smooth( long hist_in[HIST_LEN], long hist_out[HIST_LEN] )
 
 
 // モード法による閾値処理
-int calc_thresh( long hist[HIST_LEN] )
+int calc_mode_thresh( long hist[HIST_LEN] )
 {
     long max = 0;
     int i = 0;
@@ -139,16 +144,81 @@ void thresh_mode( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int smt, in
         ::hist_smooth( hist2, hist1 );
     }
 
-    int thresh = ::calc_thresh( hist1 );
-    for ( int y = 0; y < in->width; ++y ) {
-        for ( int x = 0; x < in->height; ++x ) {
-            int index = (y * in->width) + x;
-            if ( type == 2 ) {
-                out->imageData[index] = (in->imageData[index] <= thresh) ? HIGH : LOW;
-            }
-            else {
-                out->imageData[index] = (in->imageData[index] >= thresh) ? HIGH : LOW;
-            }
+    int thresh = ::calc_mode_thresh( hist1 );
+
+    threshold( in, out, thresh, type );
+}
+
+
+// 判別分析法による閾値処理
+int calc_discrim_thresh( long hist[HIST_LEN], double disparoty )
+{
+    int i, k;
+    double n0, n1, n2, m0, m1, m2;
+    double v[HIST_LEN], vmax, v0;
+
+    n0 = 0.0;
+    m0 = 0.0;
+    for ( i = 0; i < HIST_LEN; ++i ) {
+        n0 += hist[i];
+        m0 += i * hist[i];
+    }
+
+    m0 = (n0 == 0.0) ? 0.0 : (m0 / n0);
+
+    v0 = 0.0;
+    for ( i = 0; i < HIST_LEN; ++i ) {
+        v0 += (hist[i] * (i - m0) * (i - m0)) / n0;
+    }
+
+    for ( k = 0; k < HIST_LEN; ++k ) {
+        n1 = 0.0;
+        m1 = 0.0;
+        for ( i = 0; i < k; ++i ) {
+            n1 += hist[i];
+            m1 += i * hist[i];
+        }
+
+        m1 = (n1 == 0.0) ? 0.0 : (m1 / n1);
+
+        n2 = 0.0;
+        m2 = 0.0;
+        for ( i = 0; i < HIST_LEN; ++i ) {
+            n2 += hist[i];
+            m2 += i * hist[i];
+        }
+
+        m2 = (n2 == 0.0) ? 0.0 : (m2 / n2);
+
+        v[k] = ((n1 * (m1 - m0) * (m1 - m0)) + (n2 * (m2 - m0) * (m2 - m0))) / n0;
+    }
+
+    vmax = 0.0;
+    for ( i = 0; i < HIST_LEN; ++i ) {
+        if ( vmax <= v[i] ) {
+            vmax = v[i];
+            k = i;
         }
     }
+
+    if ( v0 == 0 ) {
+        return 0;
+    }
+
+    if ( (vmax / v0) >= disparoty ) {
+        return k;
+    }
+
+    return 0;
+}
+
+
+void thresh_discrim( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int type )
+{
+    long hist[HIST_LEN] = { 0 };
+    ::histgram( in, hist );
+
+    int thresh = ::calc_discrim_thresh( hist, 0.0 );
+
+    threshold( in, out, thresh, type );
 }
