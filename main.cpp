@@ -50,6 +50,11 @@ void main()
                 ::hist_image( hist_out, show );
                 ::cvShowImage( "cv", show );
             }
+            // モード法による閾値処理
+            else if ( key == 'm' ) {
+                ::thresh_mode( image, show, 3, 1 );
+                ::cvShowImage( "cv", show );
+            }
         }
     }
     catch ( std::exception& ex ) {

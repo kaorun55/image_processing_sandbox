@@ -17,3 +17,5 @@ void histgram( const cv::Ptr< IplImage >& in, long hist[HIST_LEN] );
 void hist_print( const long hist[HIST_LEN] );
 void hist_image( long hist[HIST_LEN], cv::Ptr< IplImage >& out );
 void hist_smooth( long hist_in[HIST_LEN], long hist_out[HIST_LEN] );
+void thresh_mode( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int smt, int type );
+

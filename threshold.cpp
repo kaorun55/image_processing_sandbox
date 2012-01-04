@@ -98,3 +98,57 @@ void hist_smooth( long hist_in[HIST_LEN], long hist_out[HIST_LEN] )
         hist_out[i] = (long)((double)sum / 5.0 + 0.5);
     }
 }
+
+
+// モード法による閾値処理
+int calc_thresh( long hist[HIST_LEN] )
+{
+    long max = 0;
+    int i = 0;
+    for ( i = 0; i < HIST_LEN; ++i ) {
+        if ( max <= hist[i] ) {
+            max = hist[i];
+        }
+        else {
+            break;
+        }
+    }
+
+    long min = max;
+    int j = 0;
+    for ( j = i; j < HIST_LEN; ++j ) {
+        if ( min >= hist[j] ) {
+            min = hist[j];
+        }
+        else {
+            break;
+        }
+    }
+
+    return j - 1;
+}
+
+void thresh_mode( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int smt, int type )
+{
+    long hist1[HIST_LEN] = { 0 };
+    long hist2[HIST_LEN] = { 0 };
+    ::histgram( in, hist1 );
+    for ( int i = 0; i < smt; ++i ) {
+        memcpy( hist2, hist1, sizeof(hist2) );
+
+        ::hist_smooth( hist2, hist1 );
+    }
+
+    int thresh = ::calc_thresh( hist1 );
+    for ( int y = 0; y < in->width; ++y ) {
+        for ( int x = 0; x < in->height; ++x ) {
+            int index = (y * in->width) + x;
+            if ( type == 2 ) {
+                out->imageData[index] = (in->imageData[index] <= thresh) ? HIGH : LOW;
+            }
+            else {
+                out->imageData[index] = (in->imageData[index] >= thresh) ? HIGH : LOW;
+            }
+        }
+    }
+}
