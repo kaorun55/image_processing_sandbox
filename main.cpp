@@ -80,6 +80,19 @@ void main()
                 ::gradient_sobel( gray, show, 1 );
                 ::cvShowImage( "cv", show );
             }
+            // prewittñ@
+            else if ( key == 'p' ) {
+                ::prewitt( gray, show, 1 );
+                ::cvShowImage( "cv", show );
+            }
+            // 2ílâÊëúÇÃç◊ê¸âª
+            else if ( key == 'i' ) {
+                cv::Ptr< IplImage > tmp = ::cvCreateImage( cvSize(gray->width, gray->height), gray->depth, gray->nChannels );
+
+                ::prewitt( gray, tmp, 1 );
+                ::thinning( tmp, show );
+                ::cvShowImage( "cv", show );
+            }
         }
     }
     catch ( std::exception& ex ) {

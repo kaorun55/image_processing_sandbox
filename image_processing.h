@@ -27,3 +27,7 @@ void thresh_dynamic( cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, int type
 void gradient_difference( const cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, double amp );
 void gradient_roberts( const cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, double amp );
 void gradient_sobel( const cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, double amp );
+
+
+void prewitt( const cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out, double amp );
+void thinning( const cv::Ptr< IplImage >& in, cv::Ptr< IplImage >& out );
