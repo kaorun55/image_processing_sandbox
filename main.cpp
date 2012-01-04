@@ -65,6 +65,21 @@ void main()
                 ::thresh_dynamic( gray, show, 1 );
                 ::cvShowImage( "cv", show );
             }
+            // 画像の一次微分(通常の差分)
+            else if ( key == 'f' ) {
+                ::gradient_difference( gray, show, 1 );
+                ::cvShowImage( "cv", show );
+            }
+            // 画像の一次微分(Robertsオペレーター)
+            else if ( key == 'r' ) {
+                ::gradient_roberts( gray, show, 1 );
+                ::cvShowImage( "cv", show );
+            }
+            // 画像の一次微分(Sobelオペレーター)
+            else if ( key == 'o' ) {
+                ::gradient_sobel( gray, show, 1 );
+                ::cvShowImage( "cv", show );
+            }
         }
     }
     catch ( std::exception& ex ) {
